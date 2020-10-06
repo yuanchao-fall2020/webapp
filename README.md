@@ -6,3 +6,5 @@ Before building and deploying, first, you should change the password in /dao/mys
 In the end, you can type in "go run main.go" in terminal. And see the results in postman.
 
 2020.09.29
+
+test
