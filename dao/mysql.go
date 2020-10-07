@@ -33,5 +33,6 @@ func DbURL(dbConfig *DBConfig) string {
 		dbConfig.Host,
 		dbConfig.Port,
 		dbConfig.DBName,
+
 	)
 }

@@ -1,6 +1,9 @@
 package function
 
-import "regexp"
+import (
+	"gin_demo/models"
+	"regexp"
+)
 
 func CheckEmail(email *string) bool {
 	re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
@@ -32,4 +35,16 @@ func CheckPassword(password string, level int)(statusCode int) {
 		// 1 means the password is strong enough
 		return 1
 	}
+}
+
+func CheckCategoryDuplicate(categories []models.Category) bool {
+	set := make(map[models.Category]bool)
+	for i := range categories {
+		val := set[categories[i]]
+		if val == true {
+			return false
+		}
+		set[categories[i]] = true
+	}
+	return true
 }
