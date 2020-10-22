@@ -11,6 +11,7 @@ type Question struct {
 	QuestionText string `json:"question_text"`
 	CategoryArr []Category `json:"categories" sql:"-"`
 	AnswerArr []Answer `json:"answers" sql:"-"`
+	FileArr []FileQuestion `json:"attachments" sql:"-"`
 }
 
 /*type Question struct {

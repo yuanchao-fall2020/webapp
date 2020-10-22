@@ -20,4 +20,5 @@ type Answer struct {
 	Question Question `gorm:"ForeignKey:ID;AssociationForeignKey:QuestionID" json:"-"`
 	QuestionID string `json:"question_id"`
 	AnswerText string `json:"answer_text"`
+	FileArr []FileAnswer `json:"attachments" sql:"-"`
 }
