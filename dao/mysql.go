@@ -3,6 +3,8 @@ package dao
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
+	"os"
+	"strings"
 )
 
 var DB *gorm.DB
@@ -17,11 +19,11 @@ type DBConfig struct {
 
 func BuildDBConfig() *DBConfig {
 	dbConfig := DBConfig{
-		Host:     "localhost",
+		Host:     GetHostname(),//"localhost",
 		Port:     3306,
-		User:     "root",
+		User:     "csye6225fall2020",
 		Password: "Y940519a",
-		DBName:   "db1",
+		DBName:   "csye6225",//"db1",
 	}
 	return &dbConfig
 }
@@ -35,4 +37,9 @@ func DbURL(dbConfig *DBConfig) string {
 		dbConfig.DBName,
 
 	)
+}
+
+func GetHostname() string {
+	hostname := os.Getenv("HOSTNAME")
+	return strings.TrimRight(hostname, ":3306")
 }
