@@ -8,7 +8,7 @@ import (
 	"gin_demo/models"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	//"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gin-gonic/gin"
@@ -20,7 +20,7 @@ import (
 	"os"
 	"strconv"
 	"time"
-	"github.com/joho/godotenv"
+	//"github.com/joho/godotenv"
 )
 
 var err error
@@ -50,14 +50,14 @@ func main() {
 
 	// create a default router
 	r := gin.Default()
-
+/*
 	LoadEnv()
 	sess := ConnectAws()
 	r.Use(func(c *gin.Context) {
 		c.Set("sess", sess)
 		c.Next()
 	})
-
+*/
 	r.GET("/hello", func (c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "Hello world!",
@@ -501,7 +501,8 @@ func main() {
 		}
 
 		// delete the file in AWS S3
-		S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		//S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		S3Bucket := "webapp.chaoyi.yuan"
 		for _, fileQuestion := range fileQuestionArr {
 			DeleteFile(S3Bucket, fileQuestion.S3ObjectName)
 		}
@@ -567,7 +568,8 @@ func main() {
 		}
 
 		// delete the file in AWS S3
-		S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		//S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		S3Bucket := "webapp.chaoyi.yuan"
 		for _, fileAnswer := range fileAnswerArr {
 			DeleteFile(S3Bucket, fileAnswer.S3ObjectName)
 		}
@@ -843,7 +845,8 @@ func main() {
 		}
 
 		// 3. delete the file in AWS S3
-		S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		//S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		S3Bucket := "webapp.chaoyi.yuan"
 		DeleteFile(S3Bucket, fileQuestion.S3ObjectName)
 		c.JSON(200, gin.H{"msg": "Deleted a file in AWS S3"})
 	})
@@ -912,17 +915,19 @@ func main() {
 		}
 
 		// 3. delete the file in AWS S3
-		S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		//S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		S3Bucket := "webapp.chaoyi.yuan"
 		DeleteFile(S3Bucket, fileAnswer.S3ObjectName)
 		c.JSON(200, gin.H{"msg": "Deleted a file in AWS S3"})
 	})
 
 	// post a file to an answer
 	authorized.POST("/question/:question_id/answer/:answer_id/file", func(c *gin.Context) {
-		AccessKeyID := GetEnvWithKey("AWS_ACCESS_KEY_ID")
-		SecretAccessKey := GetEnvWithKey("AWS_SECRET_ACCESS_KEY")
-		S3Region := GetEnvWithKey("AWS_REGION")
-		S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		//AccessKeyID := GetEnvWithKey("AWS_ACCESS_KEY_ID")
+		//SecretAccessKey := GetEnvWithKey("AWS_SECRET_ACCESS_KEY")
+		//S3Region := GetEnvWithKey("AWS_REGION")
+		//S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		S3Bucket := "webapp.chaoyi.yuan"
 
 		// 1. authenticate the user is the owner of the question
 		email := function.FetchUsername
@@ -964,13 +969,14 @@ func main() {
 
 		buffer := make([]byte, size)
 		f.Read(buffer)
-
+/*
 		creds := credentials.NewStaticCredentials(AccessKeyID, SecretAccessKey, "")
 		s, _ := session.NewSession(&aws.Config{
 			Region:      aws.String(S3Region),
 			Credentials: creds,
 		})
-
+*/
+		s := initSession()
 		var fileAnswer models.FileAnswer
 		fileAnswer.ID = newuuid.New().String()
 		fileAnswer.S3ObjectName = answer.ID + "/" + fileAnswer.ID + "/" + fileHeader.Filename
@@ -1013,10 +1019,11 @@ func main() {
 
 	// post a file to a question
 	authorized.POST("/question/:question_id/file", func(c *gin.Context) {
-		AccessKeyID := GetEnvWithKey("AWS_ACCESS_KEY_ID")
-		SecretAccessKey := GetEnvWithKey("AWS_SECRET_ACCESS_KEY")
-		S3Region := GetEnvWithKey("AWS_REGION")
-		S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		//AccessKeyID := GetEnvWithKey("AWS_ACCESS_KEY_ID")
+		//SecretAccessKey := GetEnvWithKey("AWS_SECRET_ACCESS_KEY")
+		//S3Region := GetEnvWithKey("AWS_REGION")
+		//S3Bucket := GetEnvWithKey("BUCKET_NAME")
+		S3Bucket := "webapp.chaoyi.yuan"
 
 		// 1. authenticate the user is the owner of the question
 		email := function.FetchUsername
@@ -1048,13 +1055,14 @@ func main() {
 
 		buffer := make([]byte, size)
 		f.Read(buffer)
-
+/*
 		creds := credentials.NewStaticCredentials(AccessKeyID, SecretAccessKey, "")
 		s, _ := session.NewSession(&aws.Config{
 			Region:      aws.String(S3Region),
 			Credentials: creds,
 		})
-
+*/
+		s := initSession()
 		var fileQuestion models.FileQuestion
 		fileQuestion.ID = newuuid.New().String()
 		fileQuestion.S3ObjectName = question.ID + "/" + fileQuestion.ID + "/" + fileHeader.Filename
@@ -1101,7 +1109,7 @@ func main() {
 func GetEnvWithKey(key string) string {
 	return os.Getenv(key)
 }
-
+/*
 func LoadEnv() {
 	err := godotenv.Load(".env")
 	if err != nil {
@@ -1131,7 +1139,7 @@ func ConnectAws() *session.Session {
 
 	return sess
 }
-
+*/
 
 func GetObjectMetaData(bucketName, objectName string) models.Metadata{
 	sess, err := session.NewSessionWithOptions(session.Options{
@@ -1219,4 +1227,31 @@ func DeleteFile(bucketName, filename string)  {
 
 	fmt.Printf("Successfully deleted %q to %q\n", filename, bucketName)
 
+}
+
+var sess *session.Session
+
+func initSession() *session.Session {
+	if sess == nil {
+		newSess, err := session.NewSessionWithOptions(session.Options{
+			// Specify profile to load for the session's config
+			Profile: "dev",
+
+			// Provide SDK Config options, such as Region.
+			Config: aws.Config{
+				Region: aws.String("us-east-1"),
+			},
+
+			// Force enable Shared Config support
+			SharedConfigState: session.SharedConfigEnable,
+		})
+
+		if err != nil {
+			log.Fatalf("can't load the aws session")
+		}else{
+			sess = newSess
+		}
+	}
+
+	return sess
 }
