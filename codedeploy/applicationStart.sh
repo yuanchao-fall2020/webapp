@@ -1,2 +1,2 @@
 #!/bin/bash
- app > /dev/null 2> /dev/null < /dev/null &
+ gin_demo > /dev/null 2> /dev/null < /dev/null &
