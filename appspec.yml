@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 
 files:
-  - source: gin_demo
+  - source: app
     destination: ~/
 
 hooks:

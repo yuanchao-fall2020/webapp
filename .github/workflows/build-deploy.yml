@@ -33,14 +33,14 @@ jobs:
           echo "${{ env.ARTIFACT_NAME }}"
           pwd
           ls
-          env GOOS=linux GOARCH=amd64 go build -v .
+          env GOOS=linux GOARCH=amd64 go build -v . -o app
           pwd
           ls -al
 
       - name: Build Deployment Artifact
         run: |
           mkdir codedeploy_artifact
-          zip -r ${{ env.ARTIFACT_NAME }} webapp codedeploy/*.sh appspec.yml
+          zip -r ${{ env.ARTIFACT_NAME }} app codedeploy/*.sh appspec.yml
           pwd
           ls -al
           mv ${{ env.ARTIFACT_NAME }} codedeploy_artifact/
