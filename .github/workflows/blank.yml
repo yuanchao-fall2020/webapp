@@ -41,7 +41,6 @@ jobs:
       - name: Test
         run: go test -v ./...
 
-
 ---
 name: Build & Deploy Webapp
 
