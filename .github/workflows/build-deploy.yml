@@ -10,8 +10,7 @@ env:
 on:
   push:
     branckes: [ master ]
-  pull_request:
-    branches: [ master ]
+
 jobs:
   ci_cd:
     runs-on: ubuntu-latest
