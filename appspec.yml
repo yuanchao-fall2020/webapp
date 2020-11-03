@@ -2,8 +2,8 @@ version: 0.0
 os: linux
 
 files:
-  - source: /main.go
-    destination: /app/
+  - source: gin_demo
+    destination: ~/
 
 hooks:
   BeforeInstall:

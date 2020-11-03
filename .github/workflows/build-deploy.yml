@@ -9,7 +9,7 @@ env:
 
 on:
   push:
-    branckes: [main]
+    branckes: [ master ]
 
 jobs:
   ci_cd:
