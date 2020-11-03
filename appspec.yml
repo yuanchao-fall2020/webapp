@@ -1,0 +1,20 @@
+version: 0.0
+os: linux
+
+files:
+  - source: /main.go
+    destination: /app/
+
+hooks:
+  BeforeInstall:
+    - location: ./codedeploy/beforeInstall.sh
+      timeout: 180
+      runas: ubuntu
+  AfterInstall:
+    - location: ./codedeploy/afterInstall.sh
+      timeout: 180
+      runas: ubuntu
+  ApplicationStart:
+    - location: ./codedeploy/applicationStart.sh
+      timeout: 180
+      runas: ubuntu
