@@ -10,4 +10,4 @@ In the end, you can type in "go run main.go" in terminal. And see the results in
 
 Debug get all question which cannot show the attachments
 
-a6
+a6 1
