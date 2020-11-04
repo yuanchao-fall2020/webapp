@@ -248,6 +248,16 @@ func main() {
 					c.JSON(404, gin.H{"error": "The question_id is not exist"})
 					return
 				}
+
+				// add the file info into the answer
+				for j := range answerArr {
+					var fileAnswerArr []models.FileAnswer
+					if err = dao.DB.Where("answer_id=?", answerArr[j].ID).Find(&fileAnswerArr).Error; err != nil {
+						c.JSON(404, gin.H{"error": "The answer id is not exist"})
+						return
+					}
+					answerArr[j].FileArr = fileAnswerArr
+				}
 				// add the file info into the answer
 				var fileQuestionArr []models.FileQuestion
 				if err = dao.DB.Where("question_id=?", questionArr[i].ID).Find(&fileQuestionArr).Error; err!=nil {
