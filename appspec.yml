@@ -3,7 +3,7 @@ os: linux
 
 files:
   - source: gin_demo
-    destination: ~/
+    destination: /opt
 
 hooks:
   AfterInstall:
