@@ -7,4 +7,7 @@ In the end, you can type in "go run main.go" in terminal. And see the results in
 
 2020.09.29
 
+
 Debug get all question which cannot show the attachments
+
+a6
