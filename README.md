@@ -10,5 +10,5 @@ In the end, you can type in "go run main.go" in terminal. And see the results in
 
 Debug get all question which cannot show the attachments
 Try prod
-
+Complete s3 bucket
 a6 1
