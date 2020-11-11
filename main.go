@@ -1124,7 +1124,7 @@ func main() {
 	}
 	defer c.Close()
 
-	log.Printf("start to add log")
+	log.Printf("start to add log testing")
 
 	// Increment a counter.
 	c.Increment("foo.counter")
