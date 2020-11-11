@@ -10,4 +10,5 @@ require (
 	github.com/joho/godotenv v1.3.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0 // indirect
+	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )
