@@ -21,7 +21,7 @@ func BuildDBConfig() *DBConfig {
 	dbConfig := DBConfig{
 		Host:     GetHostname(),//"localhost",
 		Port:     3306,
-		User:     "csye6225fall2020",
+		User:     "csye6225fall2020", //"root",
 		Password: "Y940519a",
 		DBName:   "csye6225",//"db1",
 	}

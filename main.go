@@ -8,7 +8,8 @@ import (
 	"gin_demo/models"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"runtime"
+	"gopkg.in/alexcesaro/statsd.v2"
+	"io"
 
 	//"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -22,8 +23,6 @@ import (
 	"os"
 	"strconv"
 	"time"
-	//"github.com/joho/godotenv"
-	"gopkg.in/alexcesaro/statsd.v2"
 )
 
 var err error
@@ -67,10 +66,72 @@ func main() {
 		})
 	})
 
+	d, err := statsd.New() // Connect to the UDP port 8125 by default.
+	if err != nil {
+		// If nothing is listening on the target port, an error is returned and
+		// the returned client does nothing but is still usable. So we can
+		// just log the error and go on.
+		log.Print(err)
+	}
+	defer d.Close()
+
+	f, err := os.OpenFile("/opt/logs/csye6225.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+	wrt := io.MultiWriter(os.Stdout, f)
+	log.SetOutput(wrt)
+	log.Println(" Orders API Called")
+
+	num1 := 0
+	num2 := 0
+	num3 := 0
+	num4 := 0
+	num5 := 0
+	num6 := 0
+	num7 := 0
+	num8 := 0
+	num9 := 0
+	num10 := 0
+	num11 := 0
+	num12 := 0
+	num13 := 0
+	num14 := 0
+	num15 := 0
+	num16 := 0
+	num17 := 0
+	num18 := 0
+	num19 := 0
+
 	v1Group := r.Group("/v1")
 	{
 		// add user
 		v1Group.POST("/user", func (c *gin.Context) {
+
+			log.Print("adding new user is starting...")
+			num1++
+			// Time something.
+			t := d.NewTiming()
+
+			// Increment a counter.
+			//d.Increment("foo.counter")
+			d.Count("foo.counter", num1)
+
+			/*// It can also be used as a one-liner to easily time a function.
+			pingHomepage := func() {
+				defer d.NewTiming().Send("homepage.response_time")
+
+				//print("http://example.com/")
+			}
+			pingHomepage()
+
+			// Cloning a Client allows using different parameters while still using the
+			// same connection.
+			// This is way cheaper and more efficient than using New().
+			stat := d.Clone(statsd.Prefix("http"), statsd.SampleRate(0.2))
+			stat.Increment("view") // Increments http.view*/
+
 			// get the user info from the request
 			var user models.User
 			c.BindJSON(&user)
@@ -84,7 +145,7 @@ func main() {
 			code := function.CheckPassword(user.Password, 2)
 			switch code {
 			case -1: c.JSON(http.StatusOK, gin.H{"error": "the password is too short, please use at least 8 char"})
-					return
+				return
 			case 0: c.JSON(http.StatusOK, gin.H{"error": "the password is too week, please use letters, digits and special char"})
 					return
 			}
@@ -98,6 +159,8 @@ func main() {
 				c.JSON(http.StatusOK, gin.H{"error": "the email address is not valid"})
 				return
 			}
+
+			t2 := d.NewTiming()
 
 			// check for the email address existing, if exist return 400
 			// ???????
@@ -120,10 +183,22 @@ func main() {
 					"last name": user.LastName,
 				})
 			}
+
+			t2.Send("db_response_time")
+			t.Send("api_response_time")
 		})
 
 		// view user
 		v1Group.GET("/user/", func (c *gin.Context) {
+
+			num2++
+			// Time something.
+			t := d.NewTiming()
+
+			// Increment a counter.
+			//d.Increment("foo.counter")
+			d.Count("foo.counter", num2)
+
 			var userList []models.User
 			if err = dao.DB.Find(&userList).Error;err != nil {
 				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
@@ -133,13 +208,28 @@ func main() {
 					"data": userList,
 				})
 			}
+
+			t.Send("db_response_time")
+			t.Send("api_response_time")
 		})
 
 		// get a user info by id
 		v1Group.GET("/user/:id", func(c *gin.Context) {
+
+			num3++
+			// Time something.
+			t := d.NewTiming()
+
+			// Increment a counter.
+			//d.Increment("foo.counter")
+			d.Count("foo.counter", num3)
+
 			id := c.Params.ByName("id")
 			var user models.User
 			err := dao.DB.Where("id=?", id).First(&user).Error
+
+			t.Send("db_response_time")
+
 			if err != nil {
 				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 			} else {
@@ -147,30 +237,59 @@ func main() {
 					"data": user,
 				})
 			}
+
+			t.Send("api_response_time")
 		})
 
 		// delete user
 		v1Group.DELETE("/user/:email_address", func (c *gin.Context) {
+
+			num4++
+			// Time something.
+			t := d.NewTiming()
+
+			// Increment a counter.
+			//d.Increment("foo.counter")
+			d.Count("foo.counter", num4)
+
 			email, valid := c.Params.Get("email_address")
 			if !valid {
 				c.JSON(http.StatusOK, gin.H{"error": "email is not exist"})
 				return
 			}
+
+			t2 := d.NewTiming()
+
 			if err = dao.DB.Where("email_address=?", email).Delete(models.User{}).Error; err!=nil {
 				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 			} else {
 				c.JSON(http.StatusOK, gin.H{email: "Deleted"})
 			}
+
+			t2.Send("db_response_time")
+			t.Send("api_response_time")
 		})
 
 		// get a question
 		v1Group.GET("/question/:question_id", func(c *gin.Context) {
+
+			num5++
+			// Time something.
+			t := d.NewTiming()
+
+			// Increment a counter.
+			//d.Increment("foo.counter")
+			d.Count("foo.counter", num5)
+
 			// get the question_id
 			questionId, valid := c.Params.Get("question_id")
 			if !valid {
 				c.JSON(204, gin.H{"error": "cannot get the question_id"})
 				return
 			}
+
+			t2 := d.NewTiming()
+
 			// check the question_id exist or not
 			var question models.Question
 			if err = dao.DB.Where("id=?", questionId).First(&question).Error; err!=nil {
@@ -208,6 +327,9 @@ func main() {
 				c.JSON(404, gin.H{"error": "The answer id is not exist"})
 				return
 			}
+
+			t2.Send("db_response_time")
+
 			question.AnswerArr = answerArr
 			question.CategoryArr = cateArr
 			question.FileArr = fileQuestionArr
@@ -215,10 +337,21 @@ func main() {
 			c.JSON(http.StatusOK, gin.H{
 				"question": question,
 			})
+
+			t.Send("api_response_time")
 		})
 
 		// get all questions
 		v1Group.GET("/question", func(c *gin.Context) {
+
+			num6++
+			// Time something.
+			t := d.NewTiming()
+
+			// Increment a counter.
+			//d.Increment("foo.counter")
+			d.Count("foo.counter", num6)
+
 			// get all the questions first
 			var questionArr []models.Question
 			if err = dao.DB.Find(&questionArr).Error; err!=nil {
@@ -228,6 +361,9 @@ func main() {
 
 			// get the answers and cates based on each question
 			for i := range questionArr {
+
+				t2 := d.NewTiming()
+
 				// first, get categories
 				// get from qc
 				var qcArr []models.QuestionCategory
@@ -267,6 +403,9 @@ func main() {
 					c.JSON(404, gin.H{"error": "The answer id is not exist"})
 					return
 				}
+
+				t2.Send("db_response_time")
+
 				questionArr[i].CategoryArr = cateArr
 				questionArr[i].AnswerArr = answerArr
 				questionArr[i].FileArr = fileQuestionArr
@@ -274,10 +413,21 @@ func main() {
 			c.JSON(http.StatusOK, gin.H{
 				"questions": questionArr,
 			})
+
+			t.Send("api_response_time")
 		})
 
 		// get a question's answer
 		v1Group.GET("/question/:question_id/answer/:answer_id", func(c *gin.Context) {
+
+			num7++
+			// Time something.
+			t := d.NewTiming()
+
+			// Increment a counter.
+			//d.Increment("foo.counter")
+			d.Count("foo.counter", num7)
+
 			// get the question_id and answer_id
 			questionId, valid := c.Params.Get("question_id")
 			if !valid {
@@ -289,6 +439,8 @@ func main() {
 				c.JSON(204, gin.H{"error": "cannot get the answer_id"})
 				return
 			}
+
+			t2 := d.NewTiming()
 
 			// check the question_id and answer_id exist or not
 			var answer models.Answer
@@ -307,12 +459,17 @@ func main() {
 				c.JSON(404, gin.H{"error": "The answer id is not exist"})
 				return
 			}
+
+			t2.Send("db_response_time")
+
 			answer.FileArr = fileAnswerArr
 
 			// now, we can get the answer
 			c.JSON(200, gin.H{
 				"answer": answer,
 			})
+
+			t.Send("api_response_time")
 		})
 	}
 
@@ -322,10 +479,25 @@ func main() {
 
 	// basic authorized to get a user info
 	authorized.GET("/user_auth/self", func(c *gin.Context) {
+
+		num8++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num8)
+
 		//email := c.Params.ByName("email_address")
 		email := function.FetchUsername
 		var user models.User
+
+		t2 := d.NewTiming()
+
 		err := dao.DB.Where("email_address=?", email).First(&user).Error
+
+		t2.Send("db_response_time")
+
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		} else {
@@ -338,10 +510,21 @@ func main() {
 				"last name": user.LastName,
 			})
 		}
+
+		t.Send("api_response_time")
 	})
 
 	// update a question
 	authorized.PUT("/question/:question_id", func(c *gin.Context) {
+
+		num9++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num9)
+
 		email := function.FetchUsername
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
@@ -397,6 +580,9 @@ func main() {
 			// check the question has categories or not
 			var flag2 bool = true // have category
 			var qc models.QuestionCategory
+
+			t2 := d.NewTiming()
+
 			if err = dao.DB.Where("question_id=?", question.ID).First(&qc).Error; err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": "The question does not have category"})
 				flag2 = false // no category
@@ -408,6 +594,8 @@ func main() {
 				}
 			}
 
+			t2.Send("db_response_time")
+
 			val := function.CheckCategoryDuplicate(categories)
 			if !val {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Duplicate categories!"})
@@ -417,7 +605,13 @@ func main() {
 			// update categories
 			for i := range categories {
 				var category models.Category
+
+				t3 := d.NewTiming()
+
 				dao.DB.Where("category_name=?", categories[i].CategoryName).First(&category)
+
+				t3.Send("db_response_time")
+
 				if category.ID == "" {
 					category.ID = newuuid.New().String()
 					category.CategoryName = categories[i].CategoryName
@@ -429,12 +623,16 @@ func main() {
 			}
 		}
 
+		t4 := d.NewTiming()
+
 		// send into the DB, and then response
 		if err := dao.DB.Save(&question).Error;err != nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		} else {
 			c.JSON(http.StatusOK, gin.H{"msg": "Updated a question"})
 		}
+
+		t4.Send("db_response_time")
 
 		if !flag1 {
 			for i := range categories {
@@ -446,16 +644,32 @@ func main() {
 				}
 			}
 		}
+
+		t.Send("api_response_time")
 	})
 
 	// Delete a question
 	authorized.DELETE("/question/:question_id", func(c *gin.Context) {
+
+		num10++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num10)
+
 		email := function.FetchUsername
 		var user models.User
+
+		t2 := d.NewTiming()
+
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "cannot find the user"})
 			return
 		}	// get the user info based on email
+
+		t2.Send("db_response_time")
 
 		// get the question_id
 		questionId, valid := c.Params.Get("question_id")
@@ -466,10 +680,16 @@ func main() {
 
 		// check the question_id exist or not
 		var question models.Question
+
+		t3 := d.NewTiming()
+
 		if err = dao.DB.Where("id=?", questionId).First(&question).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "The answer_id is not exist"})
 			return
 		}
+
+
+		t3.Send("db_response_time")
 
 		// check authenticated or not
 		if question.UserID !=  user.ID{
@@ -479,6 +699,9 @@ func main() {
 
 		// check the question has answers or not
 		var answer models.Answer
+
+		t4 := d.NewTiming()
+
 		if err = dao.DB.Where("question_id=?", question.ID).First(&answer).Error; err==nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "The answer is exist, user cannot delete the question"})
 			return
@@ -513,12 +736,21 @@ func main() {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted an question's file in mysql"})
 		}
 
+
+		t4.Send("db_response_time")
+
 		// delete the file in AWS S3
 		//S3Bucket := GetEnvWithKey("BUCKET_NAME")
 		S3Bucket := "webapp.chaoyi.yuan"
+
+		t5 := d.NewTiming()
+
 		for _, fileQuestion := range fileQuestionArr {
 			DeleteFile(S3Bucket, fileQuestion.S3ObjectName)
 		}
+
+		t5.Send("S3_response_time")
+
 		c.JSON(200, gin.H{"msg": "Deleted a file in AWS S3"})
 
 		// then, delete the question
@@ -527,10 +759,21 @@ func main() {
 		} else {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted a question"})
 		}
+
+		t.Send("api_response_time")
 	})
 
 	// Delete a question's answer, delete the file if exist
 	authorized.DELETE("/question/:question_id/answer/:answer_id", func(c *gin.Context) {
+
+		num11++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num11)
+
 		email := function.FetchUsername
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
@@ -567,6 +810,9 @@ func main() {
 			return
 		}
 
+
+		t2 := d.NewTiming()
+
 		// delete the file if exist
 		var fileAnswerArr []models.FileAnswer
 		if err = dao.DB.Where("answer_id=?", answerId).Find(&fileAnswerArr).Error; err!=nil {
@@ -580,6 +826,10 @@ func main() {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted an answer's file in mysql"})
 		}
 
+		t2.Send("db_response_time")
+
+		t3 := d.NewTiming()
+
 		// delete the file in AWS S3
 		//S3Bucket := GetEnvWithKey("BUCKET_NAME")
 		S3Bucket := "webapp.chaoyi.yuan"
@@ -588,16 +838,29 @@ func main() {
 		}
 		c.JSON(200, gin.H{"msg": "Deleted a file in AWS S3"})
 
+		t3.Send("S3_resonse_time")
+
 		// Start to delete answer
 		if err = dao.DB.Where("id=?", answer.ID).Delete(models.Answer{}).Error; err!=nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		} else {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted a question's answer"})
 		}
+
+		t.Send("api_response_time")
 	})
 
 	// Update answer
 	authorized.PUT("/question/:question_id/answer/:answer_id", func(c *gin.Context) {
+
+		num12++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num12)
+
 		email := function.FetchUsername
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
@@ -643,6 +906,9 @@ func main() {
 		}
 
 		answer.AnswerUpdated = time.Now()
+
+		t2 := d.NewTiming()
+
 		// send into the DB, and then response
 		if err := dao.DB.Save(&answer).Error;err != nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
@@ -652,10 +918,21 @@ func main() {
 			})
 		}
 
+		t2.Send("db_response_time")
+		t.Send("api_response_time")
 	})
 
 	// Post answer
 	authorized.POST("/question/:question_id/answer", func(c *gin.Context) {
+
+		num13++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num13)
+
 		email := function.FetchUsername
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
@@ -675,6 +952,8 @@ func main() {
 		answer.AnswerCreated = time.Now()
 		answer.AnswerUpdated = time.Now()
 
+		t2 := d.NewTiming()
+
 		// send into the DB, and then response
 		if err := dao.DB.Create(&answer).Error;err != nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
@@ -688,10 +967,22 @@ func main() {
 				"answer_text": answer.AnswerText,
 			})
 		}
+
+		t2.Send("db_response_time")
+		t.Send("api_response_time")
 	})
 
 	// post a new question
 	authorized.POST("/question/", func(c *gin.Context) {
+
+		num14++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num14)
+
 		email := function.FetchUsername
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
@@ -712,6 +1003,8 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Duplicate categories!"})
 			return
 		}
+
+		t2 := d.NewTiming()
 
 		// update categories
 		for i := range categories {
@@ -750,10 +1043,22 @@ func main() {
 				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 			}
 		}
+
+		t2.Send("db_response_time")
+		t.Send("api_response_time")
 	})
 
 	// update user
 	authorized.PUT("/user/self", func (c *gin.Context) {
+
+		num15++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num15)
+
 		/*email, valid := c.Params.Get("email_address")
 		if !valid {
 			c.JSON(http.StatusOK, gin.H{"error": "email address is not exist"})
@@ -788,6 +1093,8 @@ func main() {
 		user.ID = id
 		user.AccountCreated = accountCreate*/
 
+		t2 := d.NewTiming()
+
 		// if user wants to change the email
 		if email != *user.EmailAddress || id != user.ID || accountCreate != user.AccountCreated{
 			c.JSON(400, gin.H{"error": "The user cannot change the email address, id or create time"})
@@ -806,10 +1113,22 @@ func main() {
 				"last name": user.LastName,
 			})
 		}
+
+		t2.Send("db_response_time")
+		t.Send("api_response_time")
 	})
 
 	// delete a file in a question
 	authorized.DELETE("/question/:question_id/file/:file_id", func(c *gin.Context) {
+
+		num16++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num16)
+
 		// 1. authen the log in user is the owner of question
 		email := function.FetchUsername
 		var user models.User
@@ -828,6 +1147,9 @@ func main() {
 			c.JSON(204, gin.H{"error": "cannot get the file_id"})
 			return
 		}
+
+		t2 := d.NewTiming()
+
 		// check the question_id exist or not
 		var fileQuestion models.FileQuestion
 		if err = dao.DB.Where("id=?", fileId).First(&fileQuestion).Error; err!=nil {
@@ -839,6 +1161,9 @@ func main() {
 			c.JSON(404, gin.H{"error": "The question is not exist"})
 			return
 		}
+
+		t2.Send("db_response_time")
+
 		// check authenticated or not
 		if question.UserID !=  user.ID{
 			c.JSON(401, gin.H{"error": "the answer does not belong to this user"})
@@ -850,6 +1175,9 @@ func main() {
 			return
 		}
 
+
+		t3 := d.NewTiming()
+
 		// 2. delete the file in mysql
 		if err = dao.DB.Where("id=?", fileId).Delete(models.FileQuestion{}).Error; err!=nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -857,15 +1185,32 @@ func main() {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted an question's file in mysql"})
 		}
 
+		t3.Send("db_response_time")
+		t4 := d.NewTiming()
+
 		// 3. delete the file in AWS S3
 		//S3Bucket := GetEnvWithKey("BUCKET_NAME")
 		S3Bucket := "webapp.chaoyi.yuan"
 		DeleteFile(S3Bucket, fileQuestion.S3ObjectName)
+
+		t4.Send("S3_response_time")
+
 		c.JSON(200, gin.H{"msg": "Deleted a file in AWS S3"})
+
+		t.Send("api_response_time")
 	})
 
 	// delete a file in an answer
 	authorized.DELETE("/question/:question_id/answer/:answer_id/file/:file_id", func(c *gin.Context) {
+
+		num17++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num17)
+
 		// 1. authen the log in user is the owner of answer
 		email := function.FetchUsername
 		var user models.User
@@ -889,6 +1234,9 @@ func main() {
 			c.JSON(204, gin.H{"error": "cannot get the file_id"})
 			return
 		}
+
+		t2 := d.NewTiming()
+
 		// check the question_id and answer_id exist or not
 		var fileAnswer models.FileAnswer
 		if err = dao.DB.Where("id=?", fileId).First(&fileAnswer).Error; err!=nil {
@@ -900,6 +1248,9 @@ func main() {
 			c.JSON(404, gin.H{"error": "The answer_id is not exist"})
 			return
 		}
+
+		t2.Send("db_response_time")
+
 		if answer.QuestionID != questionId {
 			c.JSON(404, gin.H{"error": "The question_id and answer_id are noe matched"})
 			return
@@ -920,6 +1271,8 @@ func main() {
 			return
 		}
 
+		t3 := d.NewTiming()
+
 		// 2. delete the file in mysql
 		if err = dao.DB.Where("id=?", fileId).Delete(models.FileAnswer{}).Error; err!=nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -927,15 +1280,32 @@ func main() {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted an answer's file in mysql"})
 		}
 
+		t3.Send("db_response_time")
+		t4 := d.NewTiming()
+
 		// 3. delete the file in AWS S3
 		//S3Bucket := GetEnvWithKey("BUCKET_NAME")
 		S3Bucket := "webapp.chaoyi.yuan"
 		DeleteFile(S3Bucket, fileAnswer.S3ObjectName)
+
+		t4.Send("S3_response_time")
+
 		c.JSON(200, gin.H{"msg": "Deleted a file in AWS S3"})
+
+		t.Send("api_response_time")
 	})
 
 	// post a file to an answer
 	authorized.POST("/question/:question_id/answer/:answer_id/file", func(c *gin.Context) {
+
+		num18++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num18)
+
 		//AccessKeyID := GetEnvWithKey("AWS_ACCESS_KEY_ID")
 		//SecretAccessKey := GetEnvWithKey("AWS_SECRET_ACCESS_KEY")
 		//S3Region := GetEnvWithKey("AWS_REGION")
@@ -989,6 +1359,9 @@ func main() {
 			Credentials: creds,
 		})
 */
+
+		t2 := d.NewTiming()
+
 		s := initSession()
 		var fileAnswer models.FileAnswer
 		fileAnswer.ID = newuuid.New().String()
@@ -1003,6 +1376,8 @@ func main() {
 			ContentDisposition: aws.String("attachment"),
 		})
 
+		t2.Send("S3_response_time")
+
 		// 3. get the image info from S3
 		var metadata models.Metadata
 		metadata = GetObjectMetaData(S3Bucket, fileAnswer.S3ObjectName)
@@ -1016,6 +1391,8 @@ func main() {
 		fileAnswer.ContentType = *metadata.ContentType
 		fileAnswer.ETag = *metadata.ETag
 
+		t3 := d.NewTiming()
+
 		// send into the DB, and then response
 		if err := dao.DB.Create(&fileAnswer).Error;err != nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
@@ -1028,10 +1405,21 @@ func main() {
 			})
 		}
 
+		t3.Send("db_response_time")
+		t.Send("api_response_time")
 	})
 
 	// post a file to a question
 	authorized.POST("/question/:question_id/file", func(c *gin.Context) {
+
+		num19++
+		// Time something.
+		t := d.NewTiming()
+
+		// Increment a counter.
+		//d.Increment("foo.counter")
+		d.Count("foo.counter", num19)
+
 		//AccessKeyID := GetEnvWithKey("AWS_ACCESS_KEY_ID")
 		//SecretAccessKey := GetEnvWithKey("AWS_SECRET_ACCESS_KEY")
 		//S3Region := GetEnvWithKey("AWS_REGION")
@@ -1075,6 +1463,8 @@ func main() {
 			Credentials: creds,
 		})
 */
+		t2 := d.NewTiming()
+
 		s := initSession()
 		var fileQuestion models.FileQuestion
 		fileQuestion.ID = newuuid.New().String()
@@ -1089,6 +1479,8 @@ func main() {
 			ContentDisposition: aws.String("attachment"),
 		})
 
+		t2.Send("S3_response_time")
+
 		// 3. get the image info from S3
 		var metadata models.Metadata
 		metadata = GetObjectMetaData(S3Bucket, fileQuestion.S3ObjectName)
@@ -1102,6 +1494,8 @@ func main() {
 		fileQuestion.ContentType = *metadata.ContentType
 		fileQuestion.ETag = *metadata.ETag
 
+		t3 := d.NewTiming()
+
 		// send into the DB, and then response
 		if err := dao.DB.Create(&fileQuestion).Error;err != nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
@@ -1113,43 +1507,12 @@ func main() {
 				"created_date": fileQuestion.CreateDate,
 			})
 		}
+
+		t3.Send("db_rsponse_time")
+		t.Send("api_response_time")
 	})
 
-	c, err := statsd.New() // Connect to the UDP port 8125 by default.
-	if err != nil {
-		// If nothing is listening on the target port, an error is returned and
-		// the returned client does nothing but is still usable. So we can
-		// just log the error and go on.
-		log.Print(err)
-	}
-	defer c.Close()
 
-	log.Printf("start to add log testing")
-
-	// Increment a counter.
-	c.Increment("foo.counter")
-
-	// Gauge something.
-	c.Gauge("num_goroutine", runtime.NumGoroutine())
-
-	// Time something.
-	t := c.NewTiming()
-	print("http://example.com/")
-	t.Send("homepage.response_time")
-
-	// It can also be used as a one-liner to easily time a function.
-	pingHomepage := func() {
-		defer c.NewTiming().Send("homepage.response_time")
-
-		print("http://example.com/")
-	}
-	pingHomepage()
-
-	// Cloning a Client allows using different parameters while still using the
-	// same connection.
-	// This is way cheaper and more efficient than using New().
-	stat := c.Clone(statsd.Prefix("http"), statsd.SampleRate(0.2))
-	stat.Increment("view") // Increments http.view
 
 	r.Run(":9090")
 }
