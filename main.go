@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"gopkg.in/alexcesaro/statsd.v2"
-	"io"
 
 	//"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -74,15 +73,6 @@ func main() {
 		log.Print(err)
 	}
 	defer d.Close()
-
-	f, err := os.OpenFile("/opt/logs/csye6225.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-	}
-	defer f.Close()
-	wrt := io.MultiWriter(os.Stdout, f)
-	log.SetOutput(wrt)
-	log.Println(" Orders API Called")
 
 	num1 := 0
 	num2 := 0
