@@ -75,15 +75,6 @@ func main() {
 	}
 	defer d.Close()
 
-	f, err := os.OpenFile("/opt/logs/csye6225.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-	}
-	defer f.Close()
-	wrt := io.MultiWriter(os.Stdout, f)
-	log.SetOutput(wrt)
-	log.Println(" Orders API Called")
-
 	num1 := 0
 	num2 := 0
 	num3 := 0
