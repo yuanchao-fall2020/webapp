@@ -40,7 +40,7 @@ jobs:
       - name: Build Deployment Artifact
         run: |
           mkdir codedeploy_artifact
-          zip -r ${{ env.ARTIFACT_NAME }} gin_demo codedeploy/*.sh appspec.yml
+          zip -r ${{ env.ARTIFACT_NAME }} gin_demo codedeploy/*.sh appspec.yml cw-agent.json
           pwd
           ls -al
           mv ${{ env.ARTIFACT_NAME }} codedeploy_artifact/
