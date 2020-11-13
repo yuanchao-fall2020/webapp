@@ -75,7 +75,7 @@ func main() {
 		// If nothing is listening on the target port, an error is returned and
 		// the returned client does nothing but is still usable. So we can
 		// just log the error and go on.
-		log.Print(err)
+		logger.Log.Printf(err.Error())
 	}
 	defer d.Close()
 
