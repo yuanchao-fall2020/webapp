@@ -4,6 +4,8 @@ os: linux
 files:
   - source: gin_demo
     destination: /opt
+  - source: cw-agent.json
+    destination: /opt
 
 hooks:
   AfterInstall:
