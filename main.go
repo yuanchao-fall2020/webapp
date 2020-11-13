@@ -193,6 +193,8 @@ func main() {
 		// view user
 		v1Group.GET("/user/", func (c *gin.Context) {
 
+			logger.Log.Printf("View a user is starting...")
+
 			num2++
 			// Time something.
 			t := d.NewTiming()
@@ -204,6 +206,7 @@ func main() {
 			var userList []models.User
 			if err = dao.DB.Find(&userList).Error;err != nil {
 				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+				logger.Log.Printf(err.Error())
 			} else {
 				c.JSON(http.StatusOK, gin.H{
 					"msg": "success",
@@ -213,11 +216,12 @@ func main() {
 
 			t.Send("db_response_time")
 			t.Send("api_response_time")
+			logger.Log.Printf("View a user is done...")
 		})
 
 		// get a user info by id
 		v1Group.GET("/user/:id", func(c *gin.Context) {
-
+			logger.Log.Printf("Get a user is starting...")
 			num3++
 			// Time something.
 			t := d.NewTiming()
@@ -233,7 +237,8 @@ func main() {
 			t.Send("db_response_time")
 
 			if err != nil {
-				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+				c.JSON(404, gin.H{"error": err.Error()})
+				logger.Log.Printf(err.Error())
 			} else {
 				c.JSON(http.StatusOK, gin.H{
 					"data": user,
@@ -241,11 +246,12 @@ func main() {
 			}
 
 			t.Send("api_response_time")
+			logger.Log.Printf("Get a user is done...")
 		})
 
 		// delete user
 		v1Group.DELETE("/user/:email_address", func (c *gin.Context) {
-
+			logger.Log.Printf("Delete a user is starting...")
 			num4++
 			// Time something.
 			t := d.NewTiming()
@@ -256,25 +262,28 @@ func main() {
 
 			email, valid := c.Params.Get("email_address")
 			if !valid {
-				c.JSON(http.StatusOK, gin.H{"error": "email is not exist"})
+				c.JSON(404, gin.H{"error": "email is not exist"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 
 			t2 := d.NewTiming()
 
 			if err = dao.DB.Where("email_address=?", email).Delete(models.User{}).Error; err!=nil {
-				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+				c.JSON(404, gin.H{"error": err.Error()})
+				logger.Log.Printf(err.Error())
 			} else {
 				c.JSON(http.StatusOK, gin.H{email: "Deleted"})
 			}
 
 			t2.Send("db_response_time")
 			t.Send("api_response_time")
+			logger.Log.Printf("Delete a user is done...")
 		})
 
 		// get a question
 		v1Group.GET("/question/:question_id", func(c *gin.Context) {
-
+			logger.Log.Printf("Get a question is starting...")
 			num5++
 			// Time something.
 			t := d.NewTiming()
@@ -287,6 +296,7 @@ func main() {
 			questionId, valid := c.Params.Get("question_id")
 			if !valid {
 				c.JSON(204, gin.H{"error": "cannot get the question_id"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 
@@ -296,6 +306,7 @@ func main() {
 			var question models.Question
 			if err = dao.DB.Where("id=?", questionId).First(&question).Error; err!=nil {
 				c.JSON(404, gin.H{"error": "The question_id is not exist"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 
@@ -305,6 +316,7 @@ func main() {
 			var qcArr []models.QuestionCategory
 			if err = dao.DB.Where("question_id=?", questionId).Find(&qcArr).Error; err!=nil {
 				c.JSON(404, gin.H{"error": "The question_id is not exist"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 			// get from category table
@@ -313,6 +325,7 @@ func main() {
 				var category models.Category
 				if err = dao.DB.Where("id=?", qcArr[i].CategoryID).Find(&category).Error; err != nil {
 					c.JSON(404, gin.H{"error": "The question_id is not exist"})
+					logger.Log.Printf(err.Error())
 					return
 				}
 				cateArr = append(cateArr, category)
@@ -321,12 +334,14 @@ func main() {
 			var answerArr []models.Answer
 			if err = dao.DB.Where("question_id=?", questionId).Find(&answerArr).Error; err!=nil {
 				c.JSON(404, gin.H{"error": "The question_id is not exist"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 			// add the file info into the answer
 			var fileQuestionArr []models.FileQuestion
 			if err = dao.DB.Where("question_id=?", questionId).Find(&fileQuestionArr).Error; err!=nil {
 				c.JSON(404, gin.H{"error": "The answer id is not exist"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 
@@ -341,11 +356,12 @@ func main() {
 			})
 
 			t.Send("api_response_time")
+			logger.Log.Printf("Get a question is done...")
 		})
 
 		// get all questions
 		v1Group.GET("/question", func(c *gin.Context) {
-
+			logger.Log.Printf("Get all questions is starting...")
 			num6++
 			// Time something.
 			t := d.NewTiming()
@@ -358,6 +374,7 @@ func main() {
 			var questionArr []models.Question
 			if err = dao.DB.Find(&questionArr).Error; err!=nil {
 				c.JSON(404, gin.H{"error": "The question_id is not exist"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 
@@ -371,6 +388,7 @@ func main() {
 				var qcArr []models.QuestionCategory
 				if err = dao.DB.Where("question_id=?", questionArr[i].ID).Find(&qcArr).Error; err!=nil {
 					c.JSON(404, gin.H{"error": "The question_id is not exist"})
+					logger.Log.Printf(err.Error())
 					return
 				}
 				// get from category table
@@ -379,6 +397,7 @@ func main() {
 					var category models.Category
 					if err = dao.DB.Where("id=?", qcArr[i].CategoryID).Find(&category).Error; err != nil {
 						c.JSON(404, gin.H{"error": "The question_id is not exist"})
+						logger.Log.Printf(err.Error())
 						return
 					}
 					cateArr = append(cateArr, category)
@@ -387,6 +406,7 @@ func main() {
 				var answerArr []models.Answer
 				if err = dao.DB.Where("question_id=?", questionArr[i].ID).Find(&answerArr).Error; err!=nil {
 					c.JSON(404, gin.H{"error": "The question_id is not exist"})
+					logger.Log.Printf(err.Error())
 					return
 				}
 
@@ -395,6 +415,7 @@ func main() {
 					var fileAnswerArr []models.FileAnswer
 					if err = dao.DB.Where("answer_id=?", answerArr[j].ID).Find(&fileAnswerArr).Error; err != nil {
 						c.JSON(404, gin.H{"error": "The answer id is not exist"})
+						logger.Log.Printf(err.Error())
 						return
 					}
 					answerArr[j].FileArr = fileAnswerArr
@@ -403,6 +424,7 @@ func main() {
 				var fileQuestionArr []models.FileQuestion
 				if err = dao.DB.Where("question_id=?", questionArr[i].ID).Find(&fileQuestionArr).Error; err!=nil {
 					c.JSON(404, gin.H{"error": "The answer id is not exist"})
+					logger.Log.Printf(err.Error())
 					return
 				}
 
@@ -417,11 +439,12 @@ func main() {
 			})
 
 			t.Send("api_response_time")
+			logger.Log.Printf("Get all questions is done...")
 		})
 
 		// get a question's answer
 		v1Group.GET("/question/:question_id/answer/:answer_id", func(c *gin.Context) {
-
+			logger.Log.Printf("Get an answer is starting...")
 			num7++
 			// Time something.
 			t := d.NewTiming()
@@ -434,11 +457,13 @@ func main() {
 			questionId, valid := c.Params.Get("question_id")
 			if !valid {
 				c.JSON(204, gin.H{"error": "cannot get the question_id"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 			answerId, valid := c.Params.Get("answer_id")
 			if !valid {
 				c.JSON(204, gin.H{"error": "cannot get the answer_id"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 
@@ -448,10 +473,12 @@ func main() {
 			var answer models.Answer
 			if err = dao.DB.Where("id=?", answerId).First(&answer).Error; err!=nil {
 				c.JSON(404, gin.H{"error": "The answer_id is not exist"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 			if answer.QuestionID != questionId {
 				c.JSON(404, gin.H{"error": "The question_id and answer_id are noe matched"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 
@@ -459,6 +486,7 @@ func main() {
 			var fileAnswerArr []models.FileAnswer
 			if err = dao.DB.Where("answer_id=?", answerId).Find(&fileAnswerArr).Error; err!=nil {
 				c.JSON(404, gin.H{"error": "The answer id is not exist"})
+				logger.Log.Printf(err.Error())
 				return
 			}
 
@@ -472,6 +500,7 @@ func main() {
 			})
 
 			t.Send("api_response_time")
+			logger.Log.Printf("Get an answer is done...")
 		})
 	}
 
@@ -481,7 +510,7 @@ func main() {
 
 	// basic authorized to get a user info
 	authorized.GET("/user_auth/self", func(c *gin.Context) {
-
+		logger.Log.Printf("Get a user is starting...")
 		num8++
 		// Time something.
 		t := d.NewTiming()
@@ -501,7 +530,8 @@ func main() {
 		t2.Send("db_response_time")
 
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			c.JSON(404, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"id": user.ID,
@@ -514,11 +544,12 @@ func main() {
 		}
 
 		t.Send("api_response_time")
+		logger.Log.Printf("Get a user is done...")
 	})
 
 	// update a question
 	authorized.PUT("/question/:question_id", func(c *gin.Context) {
-
+		logger.Log.Printf("Update a question is starting...")
 		num9++
 		// Time something.
 		t := d.NewTiming()
@@ -531,6 +562,7 @@ func main() {
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "cannot find the user"})
+			logger.Log.Printf(err.Error())
 			return
 		}	// get the user info based on email
 
@@ -538,6 +570,7 @@ func main() {
 		questionId, valid := c.Params.Get("question_id")
 		if !valid {
 			c.JSON(204, gin.H{"error": "cannot get the question_id"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 
@@ -545,12 +578,14 @@ func main() {
 		var question models.Question
 		if err = dao.DB.Where("id=?", questionId).First(&question).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "The question_id is not exist"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 
 		// check authenticated or not
 		if question.UserID !=  user.ID{
 			c.JSON(401, gin.H{"error": "the question does not belong to this user"})
+			logger.Log.Printf("the question does not belong to this user")
 			return
 		}
 
@@ -564,6 +599,7 @@ func main() {
 		// check content is empty or not
 		if newQuestion.QuestionText == "" && newQuestion.CategoryArr == nil{
 			c.JSON(204, gin.H{"error": "no content"})
+			logger.Log.Printf("no content")
 			return
 		}
 		if newQuestion.QuestionText != "" {
@@ -593,6 +629,7 @@ func main() {
 			if flag2 {
 				if err = dao.DB.Where("question_id=?", question.ID).Delete(models.QuestionCategory{}).Error; err != nil {
 					c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+					logger.Log.Printf(err.Error())
 				}
 			}
 
@@ -601,6 +638,7 @@ func main() {
 			val := function.CheckCategoryDuplicate(categories)
 			if !val {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Duplicate categories!"})
+				logger.Log.Printf("error: Duplicate catefories")
 				return
 			}
 
@@ -618,7 +656,8 @@ func main() {
 					category.ID = newuuid.New().String()
 					category.CategoryName = categories[i].CategoryName
 					if err := dao.DB.Create(&category).Error; err != nil {
-						c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+						c.JSON(404, gin.H{"error": err.Error()})
+						logger.Log.Printf(err.Error())
 					}
 				}
 				categories[i].ID = category.ID
@@ -629,7 +668,8 @@ func main() {
 
 		// send into the DB, and then response
 		if err := dao.DB.Save(&question).Error;err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			c.JSON(404, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{"msg": "Updated a question"})
 		}
@@ -642,17 +682,19 @@ func main() {
 				qc.CategoryID = categories[i].ID
 				qc.QuestionID = question.ID
 				if err := dao.DB.Create(&qc).Error; err != nil {
-					c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+					c.JSON(404, gin.H{"error": err.Error()})
+					logger.Log.Printf(err.Error())
 				}
 			}
 		}
 
 		t.Send("api_response_time")
+		logger.Log.Printf("Update a question is done...")
 	})
 
 	// Delete a question
 	authorized.DELETE("/question/:question_id", func(c *gin.Context) {
-
+		logger.Log.Printf("Delete a question is starting...")
 		num10++
 		// Time something.
 		t := d.NewTiming()
@@ -668,6 +710,7 @@ func main() {
 
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "cannot find the user"})
+			logger.Log.Printf(err.Error())
 			return
 		}	// get the user info based on email
 
@@ -677,6 +720,7 @@ func main() {
 		questionId, valid := c.Params.Get("question_id")
 		if !valid {
 			c.JSON(204, gin.H{"error": "cannot get the question_id"})
+			logger.Log.Printf("error: cannot get hte question_id")
 			return
 		}
 
@@ -687,6 +731,7 @@ func main() {
 
 		if err = dao.DB.Where("id=?", questionId).First(&question).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "The answer_id is not exist"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 
@@ -696,6 +741,7 @@ func main() {
 		// check authenticated or not
 		if question.UserID !=  user.ID{
 			c.JSON(401, gin.H{"error": "the question does not belong to this user"})
+			logger.Log.Printf("error: this question does not belong to this user")
 			return
 		}
 
@@ -706,6 +752,7 @@ func main() {
 
 		if err = dao.DB.Where("question_id=?", question.ID).First(&answer).Error; err==nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "The answer is exist, user cannot delete the question"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 
@@ -714,6 +761,7 @@ func main() {
 		var qc models.QuestionCategory
 		if err = dao.DB.Where("question_id=?", question.ID).First(&qc).Error; err!=nil {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "The question does not have category"})
+			logger.Log.Printf(err.Error())
 			flag = false // no category
 		}
 		// now, the user can delete the question without any answers
@@ -722,6 +770,7 @@ func main() {
 		if flag {
 			if err = dao.DB.Where("question_id=?", question.ID).Delete(models.QuestionCategory{}).Error; err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				logger.Log.Printf(err.Error())
 			}
 		}
 
@@ -729,11 +778,13 @@ func main() {
 		var fileQuestionArr []models.FileQuestion
 		if err = dao.DB.Where("question_id=?", questionId).Find(&fileQuestionArr).Error; err!=nil {
 			c.JSON(200, gin.H{"msg": "cannot find the file for this answer"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 		// delete the file in mysql
 		if err = dao.DB.Where("question_id=?", questionId).Delete(models.FileQuestion{}).Error; err!=nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted an question's file in mysql"})
 		}
@@ -758,16 +809,18 @@ func main() {
 		// then, delete the question
 		if err = dao.DB.Where("id=?", question.ID).Delete(models.Question{}).Error; err!=nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted a question"})
 		}
 
 		t.Send("api_response_time")
+		logger.Log.Printf("Delete a question is done...")
 	})
 
 	// Delete a question's answer, delete the file if exist
 	authorized.DELETE("/question/:question_id/answer/:answer_id", func(c *gin.Context) {
-
+		logger.Log.Printf("Delete an answer is starting...")
 		num11++
 		// Time something.
 		t := d.NewTiming()
@@ -780,6 +833,7 @@ func main() {
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "cannot find the user"})
+			logger.Log.Printf(err.Error())
 			return
 		}	// get the user info based on email
 
@@ -787,11 +841,13 @@ func main() {
 		questionId, valid := c.Params.Get("question_id")
 		if !valid {
 			c.JSON(204, gin.H{"error": "cannot get the question_id"})
+			logger.Log.Printf("error: cannot get the question_id")
 			return
 		}
 		answerId, valid := c.Params.Get("answer_id")
 		if !valid {
 			c.JSON(204, gin.H{"error": "cannot get the answer_id"})
+			logger.Log.Printf("error: cannot get the answer_id")
 			return
 		}
 
@@ -799,16 +855,19 @@ func main() {
 		var answer models.Answer
 		if err = dao.DB.Where("id=?", answerId).First(&answer).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "The answer_id is not exist"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 		if answer.QuestionID != questionId {
-			c.JSON(404, gin.H{"error": "The question_id and answer_id are noe matched"})
+			c.JSON(404, gin.H{"error": "The question_id and answer_id are not matched"})
+			logger.Log.Printf("error: the question_id and answer_id are not matched")
 			return
 		}
 
 		// check authenticated or not
 		if answer.UserID !=  user.ID{
 			c.JSON(401, gin.H{"error": "the answer does not belong to this user"})
+			logger.Log.Printf("error: the answer does not belong to this user")
 			return
 		}
 
@@ -819,11 +878,13 @@ func main() {
 		var fileAnswerArr []models.FileAnswer
 		if err = dao.DB.Where("answer_id=?", answerId).Find(&fileAnswerArr).Error; err!=nil {
 			c.JSON(200, gin.H{"msg": "cannot find the file for this answer"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 		// delete the file in mysql
 		if err = dao.DB.Where("answer_id=?", answerId).Delete(models.FileAnswer{}).Error; err!=nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted an answer's file in mysql"})
 		}
@@ -845,16 +906,18 @@ func main() {
 		// Start to delete answer
 		if err = dao.DB.Where("id=?", answer.ID).Delete(models.Answer{}).Error; err!=nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted a question's answer"})
 		}
 
 		t.Send("api_response_time")
+		logger.Log.Printf("Delete an answer is done...")
 	})
 
 	// Update answer
 	authorized.PUT("/question/:question_id/answer/:answer_id", func(c *gin.Context) {
-
+		logger.Log.Printf("Update an answer is starting...")
 		num12++
 		// Time something.
 		t := d.NewTiming()
@@ -867,6 +930,7 @@ func main() {
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "cannot find the user"})
+			logger.Log.Printf(err.Error())
 			return
 		}	// get the user info based on email
 
@@ -874,11 +938,13 @@ func main() {
 		questionId, valid := c.Params.Get("question_id")
 		if !valid {
 			c.JSON(204, gin.H{"error": "cannot get the question_id"})
+			logger.Log.Printf("error: cannot get the question_id")
 			return
 		}
 		answerId, valid := c.Params.Get("answer_id")
 		if !valid {
 			c.JSON(204, gin.H{"error": "cannot get the answer_id"})
+			logger.Log.Printf("error: cannot get hte answer_id")
 			return
 		}
 
@@ -886,16 +952,19 @@ func main() {
 		var answer models.Answer
 		if err = dao.DB.Where("id=?", answerId).First(&answer).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "The answer_id is not exist"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 		if answer.QuestionID != questionId {
 			c.JSON(404, gin.H{"error": "The question_id and answer_id are noe matched"})
+			logger.Log.Printf("error: the question id and answer id are not matched")
 			return
 		}
 
 		// check authenticated or not
 		if answer.UserID !=  user.ID{
 			c.JSON(401, gin.H{"error": "the answer does not belong to this user"})
+			logger.Log.Printf("error: the answer does not belong to this user")
 			return
 		}
 
@@ -904,6 +973,7 @@ func main() {
 		// check content is empty or not
 		if answer.AnswerText == "" {
 			c.JSON(204, gin.H{"error": "no content"})
+			logger.Log.Printf("error: no content")
 			return
 		}
 
@@ -913,7 +983,8 @@ func main() {
 
 		// send into the DB, and then response
 		if err := dao.DB.Save(&answer).Error;err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			c.JSON(404, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"msg": "Updated an answer",
@@ -922,11 +993,12 @@ func main() {
 
 		t2.Send("db_response_time")
 		t.Send("api_response_time")
+		logger.Log.Printf("Update an answer is done...")
 	})
 
 	// Post answer
 	authorized.POST("/question/:question_id/answer", func(c *gin.Context) {
-
+		logger.Log.Printf("Post an answer is starting...")
 		num13++
 		// Time something.
 		t := d.NewTiming()
@@ -939,11 +1011,13 @@ func main() {
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 			return
 		}	// get the user info based on email
 		id, valid := c.Params.Get("question_id")
 		if !valid {
 			c.JSON(http.StatusOK, gin.H{"error": "email address is not exist"})
+			logger.Log.Printf("error: email is not exit")
 			return
 		}
 		var answer models.Answer
@@ -958,7 +1032,8 @@ func main() {
 
 		// send into the DB, and then response
 		if err := dao.DB.Create(&answer).Error;err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			c.JSON(404, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"answer_id": answer.ID,
@@ -972,11 +1047,12 @@ func main() {
 
 		t2.Send("db_response_time")
 		t.Send("api_response_time")
+		logger.Log.Printf("Post an answer is done...")
 	})
 
 	// post a new question
 	authorized.POST("/question/", func(c *gin.Context) {
-
+		logger.Log.Printf("Post a question is starting...")
 		num14++
 		// Time something.
 		t := d.NewTiming()
@@ -988,7 +1064,8 @@ func main() {
 		email := function.FetchUsername
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			c.JSON(404, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 			return
 		}	// get the user info based on email
 
@@ -1003,6 +1080,7 @@ func main() {
 		val := function.CheckCategoryDuplicate(categories)
 		if !val {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Duplicate categories!"})
+			logger.Log.Printf("error: duplicate catefories")
 			return
 		}
 
@@ -1017,6 +1095,7 @@ func main() {
 				category.CategoryName = categories[i].CategoryName
 				if err := dao.DB.Create(&category).Error; err != nil {
 					c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+					logger.Log.Printf(err.Error())
 				}
 			}
 			categories[i].ID = category.ID
@@ -1025,6 +1104,7 @@ func main() {
 		// send into the DB, and then response
 		if err := dao.DB.Create(&question).Error;err != nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"question_id": question.ID,
@@ -1043,16 +1123,18 @@ func main() {
 			qc.QuestionID = question.ID
 			if err := dao.DB.Create(&qc).Error; err != nil {
 				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+				logger.Log.Printf(err.Error())
 			}
 		}
 
 		t2.Send("db_response_time")
 		t.Send("api_response_time")
+		logger.Log.Printf("Post a question is done...")
 	})
 
 	// update user
 	authorized.PUT("/user/self", func (c *gin.Context) {
-
+		logger.Log.Printf("Update a user is starting...")
 		num15++
 		// Time something.
 		t := d.NewTiming()
@@ -1070,6 +1152,7 @@ func main() {
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 			return
 		}	// get the user info based on email
 		id := user.ID
@@ -1082,8 +1165,10 @@ func main() {
 			code := function.CheckPassword(user.Password, 2)
 			switch code {
 			case -1: c.JSON(http.StatusOK, gin.H{"error": "the password is too short, please use at least 8 char"})
+				logger.Log.Printf("error: password too short")
 				return
 			case 0: c.JSON(http.StatusOK, gin.H{"error": "the password is too week, please use letters, digits and special char"})
+				logger.Log.Printf("error: password too week")
 				return
 			}
 
@@ -1100,11 +1185,13 @@ func main() {
 		// if user wants to change the email
 		if email != *user.EmailAddress || id != user.ID || accountCreate != user.AccountCreated{
 			c.JSON(400, gin.H{"error": "The user cannot change the email address, id or create time"})
+			logger.Log.Printf("error: user cannot change the email, id or create time")
 			return
 		}
 
 		if err = dao.DB.Save(&user).Error; err!=nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			c.JSON(404, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"id": user.ID,
@@ -1118,11 +1205,12 @@ func main() {
 
 		t2.Send("db_response_time")
 		t.Send("api_response_time")
+		logger.Log.Printf("Update a user is done...")
 	})
 
 	// delete a file in a question
 	authorized.DELETE("/question/:question_id/file/:file_id", func(c *gin.Context) {
-
+		logger.Log.Printf("Delete a file in question is starting...")
 		num16++
 		// Time something.
 		t := d.NewTiming()
@@ -1136,17 +1224,20 @@ func main() {
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "cannot find the user"})
+			logger.Log.Printf(err.Error())
 			return
 		}	// get the user info based on email
 		// get the question_id and file_id
 		questionId, valid := c.Params.Get("question_id")
 		if !valid {
 			c.JSON(204, gin.H{"error": "cannot get the question_id"})
+			logger.Log.Printf("error: cannot get the question id")
 			return
 		}
 		fileId, valid := c.Params.Get("file_id")
 		if !valid {
 			c.JSON(204, gin.H{"error": "cannot get the file_id"})
+			logger.Log.Printf("error: cannot get the file id")
 			return
 		}
 
@@ -1156,11 +1247,13 @@ func main() {
 		var fileQuestion models.FileQuestion
 		if err = dao.DB.Where("id=?", fileId).First(&fileQuestion).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "The file_id is not exist"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 		var question models.Question
 		if err = dao.DB.Where("id=?", questionId).First(&question).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "The question is not exist"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 
@@ -1169,11 +1262,13 @@ func main() {
 		// check authenticated or not
 		if question.UserID !=  user.ID{
 			c.JSON(401, gin.H{"error": "the answer does not belong to this user"})
+			logger.Log.Printf("error: the answer does not belong to this user")
 			return
 		}
 		// check file id is matched with question id
 		if fileQuestion.QuestionID != questionId {
 			c.JSON(401, gin.H{"error": "the question is not matched with the file"})
+			logger.Log.Printf("error: the question is not mathced with the file")
 			return
 		}
 
@@ -1183,6 +1278,7 @@ func main() {
 		// 2. delete the file in mysql
 		if err = dao.DB.Where("id=?", fileId).Delete(models.FileQuestion{}).Error; err!=nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted an question's file in mysql"})
 		}
@@ -1200,11 +1296,12 @@ func main() {
 		c.JSON(200, gin.H{"msg": "Deleted a file in AWS S3"})
 
 		t.Send("api_response_time")
+		logger.Log.Printf("Delete a file in a question is done...")
 	})
 
 	// delete a file in an answer
 	authorized.DELETE("/question/:question_id/answer/:answer_id/file/:file_id", func(c *gin.Context) {
-
+		logger.Log.Printf("Delete a file in an answer is starting...")
 		num17++
 		// Time something.
 		t := d.NewTiming()
@@ -1218,22 +1315,26 @@ func main() {
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "cannot find the user"})
+			logger.Log.Printf(err.Error())
 			return
 		}	// get the user info based on email
 		// get the question_id and answer_id
 		questionId, valid := c.Params.Get("question_id")
 		if !valid {
 			c.JSON(204, gin.H{"error": "cannot get the question_id"})
+			logger.Log.Printf("error: cannot get the question id")
 			return
 		}
 		answerId, valid := c.Params.Get("answer_id")
 		if !valid {
 			c.JSON(204, gin.H{"error": "cannot get the answer_id"})
+			logger.Log.Printf("error: cannot get the answer id")
 			return
 		}
 		fileId, valid := c.Params.Get("file_id")
 		if !valid {
 			c.JSON(204, gin.H{"error": "cannot get the file_id"})
+			logger.Log.Printf("error: cannot get the file id")
 			return
 		}
 
@@ -1243,11 +1344,13 @@ func main() {
 		var fileAnswer models.FileAnswer
 		if err = dao.DB.Where("id=?", fileId).First(&fileAnswer).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "The file_id is not exist"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 		var answer models.Answer
 		if err = dao.DB.Where("id=?", answerId).First(&answer).Error; err!=nil {
 			c.JSON(404, gin.H{"error": "The answer_id is not exist"})
+			logger.Log.Printf(err.Error())
 			return
 		}
 
@@ -1255,21 +1358,25 @@ func main() {
 
 		if answer.QuestionID != questionId {
 			c.JSON(404, gin.H{"error": "The question_id and answer_id are noe matched"})
+			logger.Log.Printf("error: the question id and answer id are not matched")
 			return
 		}
 		// check authenticated or not
 		if answer.UserID !=  user.ID{
 			c.JSON(401, gin.H{"error": "the answer does not belong to this user"})
+			logger.Log.Printf("error: the answer does not belong to this user")
 			return
 		}
 		// check answer id is matched with question id
 		if answer.QuestionID != questionId {
 			c.JSON(401, gin.H{"error": "the answer is not matched with the question"})
+			logger.Log.Printf("error: the answer is not mathced with the question")
 			return
 		}
 		// chekc file id is mathced with the answer id
 		if fileAnswer.AnswerID != answerId {
 			c.JSON(401, gin.H{"error": "the file is not belonging to this answer"})
+			logger.Log.Printf("error: the file is not belonging to the answer")
 			return
 		}
 
@@ -1278,6 +1385,7 @@ func main() {
 		// 2. delete the file in mysql
 		if err = dao.DB.Where("id=?", fileId).Delete(models.FileAnswer{}).Error; err!=nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{"msg": "Deleted an answer's file in mysql"})
 		}
@@ -1295,11 +1403,12 @@ func main() {
 		c.JSON(200, gin.H{"msg": "Deleted a file in AWS S3"})
 
 		t.Send("api_response_time")
+		logger.Log.Printf("Delete a file in an answer is done...")
 	})
 
 	// post a file to an answer
 	authorized.POST("/question/:question_id/answer/:answer_id/file", func(c *gin.Context) {
-
+		logger.Log.Printf("Post a file to the answer is starting...")
 		num18++
 		// Time something.
 		t := d.NewTiming()
@@ -1318,12 +1427,14 @@ func main() {
 		email := function.FetchUsername
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			c.JSON(404, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 			return
 		}	// get the user info based on email
 		questionId, valid := c.Params.Get("question_id")
 		if !valid {
-			c.JSON(http.StatusOK, gin.H{"error": "question is not exist"})
+			c.JSON(404, gin.H{"error": "question is not exist"})
+			logger.Log.Printf("error: question is not exist")
 			return
 		}
 		answerId, valid := c.Params.Get("answer_id")
@@ -1334,16 +1445,19 @@ func main() {
 		var answer models.Answer
 		if err = dao.DB.Where("id=?", answerId).First(&answer).Error; err!=nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 			return
 		}
 		//
 		if answer.UserID != user.ID {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "this question id is not belong to the user"})
+			logger.Log.Printf("error: question id is not belong to user")
 			return
 		}
 		//
 		if answer.QuestionID != questionId {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "this answer id is not matched with the question if"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "this answer id is not matched with the question id"})
+			logger.Log.Printf("error: answer id is not matched with question id")
 			return
 		}
 
@@ -1398,6 +1512,7 @@ func main() {
 		// send into the DB, and then response
 		if err := dao.DB.Create(&fileAnswer).Error;err != nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"file_name": fileAnswer.FileName,
@@ -1409,11 +1524,12 @@ func main() {
 
 		t3.Send("db_response_time")
 		t.Send("api_response_time")
+		logger.Log.Printf("Post a file to the answer is done...")
 	})
 
 	// post a file to a question
 	authorized.POST("/question/:question_id/file", func(c *gin.Context) {
-
+		logger.Log.Printf("Post a file to the question is starting...")
 		num19++
 		// Time something.
 		t := d.NewTiming()
@@ -1433,21 +1549,25 @@ func main() {
 		var user models.User
 		if err = dao.DB.Where("email_address=?", email).First(&user).Error; err!=nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 			return
 		}	// get the user info based on email
 		id, valid := c.Params.Get("question_id")
 		if !valid {
 			c.JSON(http.StatusOK, gin.H{"error": "question is not exist"})
+			logger.Log.Printf("error: question is not exist")
 			return
 		}
 		var question models.Question
 		if err = dao.DB.Where("id=?", id).First(&question).Error; err!=nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 			return
 		}
 		//
 		if question.UserID != user.ID {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "this question id is not belong to the user"})
+			logger.Log.Printf("error: question id is not belong to the user")
 			return
 		}
 
@@ -1501,6 +1621,7 @@ func main() {
 		// send into the DB, and then response
 		if err := dao.DB.Create(&fileQuestion).Error;err != nil {
 			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			logger.Log.Printf(err.Error())
 		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"file_name": fileQuestion.FileName,
@@ -1512,6 +1633,7 @@ func main() {
 
 		t3.Send("db_rsponse_time")
 		t.Send("api_response_time")
+		logger.Log.Printf("Post a file to the question is done...")
 	})
 
 
