@@ -20,8 +20,10 @@ type DBConfig struct {
 func BuildDBConfig() *DBConfig {
 	dbConfig := DBConfig{
 		Host:     GetHostname(),//"localhost",
+		//Host:	  "localhost",
 		Port:     3306,
 		User:     "csye6225fall2020", //"root",
+		//User:	  "root",
 		Password: "Y940519a",
 		DBName:   "csye6225",//"db1",
 	}

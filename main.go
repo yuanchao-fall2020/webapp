@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gin_demo/dao"
 	"gin_demo/function"
+	"gin_demo/logger"
 	"gin_demo/models"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -22,6 +23,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	//"logger"
 )
 
 var err error
@@ -32,6 +34,9 @@ var MyBucket string
 var filepath string
 
 func main() {
+
+	logger.Log.Printf("web app is starting...")
+
 	// connect to the DB
 	dao.DB, err = gorm.Open("mysql", dao.DbURL(dao.BuildDBConfig()))
 	if err != nil {
@@ -99,7 +104,8 @@ func main() {
 		// add user
 		v1Group.POST("/user", func (c *gin.Context) {
 
-			log.Print("adding new user is starting...")
+			logger.Log.Printf("POST a user is starting...")
+
 			num1++
 			// Time something.
 			t := d.NewTiming()
@@ -135,9 +141,11 @@ func main() {
 			code := function.CheckPassword(user.Password, 2)
 			switch code {
 			case -1: c.JSON(http.StatusOK, gin.H{"error": "the password is too short, please use at least 8 char"})
+				logger.Log.Printf("error: the password is too short")
 				return
 			case 0: c.JSON(http.StatusOK, gin.H{"error": "the password is too week, please use letters, digits and special char"})
-					return
+				logger.Log.Printf("error: the password is too week")
+				return
 			}
 
 			// if passed the password test, then we can use this password
@@ -147,6 +155,7 @@ func main() {
 			// check the email is valid or not
 			if !function.CheckEmail(user.EmailAddress) {
 				c.JSON(http.StatusOK, gin.H{"error": "the email address is not valid"})
+				logger.Log.Printf("error: the email address is not valid")
 				return
 			}
 
@@ -157,12 +166,14 @@ func main() {
 			var newUser models.User
 			if err = dao.DB.Where("email_address=?", user.EmailAddress).First(&newUser).Error; err==nil {
 				c.JSON(400, gin.H{"error": "the email address is already exist"})
+				logger.Log.Printf("error: the email address is exit")
 				return
 			}
 
 			// send into the DB, and then response
 			if err := dao.DB.Create(&user).Error;err != nil {
 				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+				logger.Log.Printf(err.Error())
 			} else {
 				c.JSON(http.StatusOK, gin.H{
 					"id": user.ID,
@@ -176,6 +187,7 @@ func main() {
 
 			t2.Send("db_response_time")
 			t.Send("api_response_time")
+			logger.Log.Printf("POST a user is done...")
 		})
 
 		// view user
