@@ -1,6 +1,5 @@
 # webapp
 
-demo7 ass
 demo6 ass
 
 This web application is programmed by golang. I use Gin framework and Gorm to build the web app.
