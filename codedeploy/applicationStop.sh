@@ -1,4 +1,4 @@
 #!/bin/bash
 
-sudo killall gin_demo
-exit 0
+#sudo killall gin_demo
+#exit 0
