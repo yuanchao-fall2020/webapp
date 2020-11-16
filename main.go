@@ -56,14 +56,7 @@ func main() {
 
 	// create a default router
 	r := gin.Default()
-/*
-	LoadEnv()
-	sess := ConnectAws()
-	r.Use(func(c *gin.Context) {
-		c.Set("sess", sess)
-		c.Next()
-	})
-*/
+
 	r.GET("/hello", func (c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "Hello world!",
