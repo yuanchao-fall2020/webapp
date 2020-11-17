@@ -103,8 +103,6 @@ func main() {
 			// Time something.
 			t := d.NewTiming()
 
-			// Increment a counter.
-			//d.Increment("foo.counter")
 			d.Count("foo.counter", num1)
 
 			/*// It can also be used as a one-liner to easily time a function.
