@@ -9,6 +9,7 @@ import (
 	"gin_demo/models"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/sns"
 	"gopkg.in/alexcesaro/statsd.v2"
 
 	//"github.com/aws/aws-sdk-go/aws/credentials"
@@ -904,6 +905,22 @@ func main() {
 
 		t.Send("api_response_time")
 		logger.Log.Printf("Delete an answer is done...")
+
+		var question models.Question
+		if err = dao.DB.Where("id=?", questionId).First(&question).Error; err!=nil {
+			c.JSON(404, gin.H{"error": "The question_id is not exist"})
+			logger.Log.Printf(err.Error())
+			return
+		}
+		var questionUser models.User
+		if err = dao.DB.Where("id=?", question.UserID).First(&questionUser).Error; err!=nil {
+			c.JSON(404, gin.H{"error": "The user_id is not exist"})
+			logger.Log.Printf(err.Error())
+			return
+		}
+
+		msg := "Delete an answer" + questionId + "," + *(questionUser.EmailAddress) + "," + answerId + "," + answer.AnswerText
+		snsPublish(msg, "arn:aws:sns:us-east-1:931397163240:fall2020")
 	})
 
 	// Update answer
@@ -985,6 +1002,22 @@ func main() {
 		t2.Send("db_response_time")
 		t.Send("api_response_time")
 		logger.Log.Printf("Update an answer is done...")
+
+		var question models.Question
+		if err = dao.DB.Where("id=?", questionId).First(&question).Error; err!=nil {
+			c.JSON(404, gin.H{"error": "The question_id is not exist"})
+			logger.Log.Printf(err.Error())
+			return
+		}
+		var questionUser models.User
+		if err = dao.DB.Where("id=?", question.UserID).First(&questionUser).Error; err!=nil {
+			c.JSON(404, gin.H{"error": "The user_id is not exist"})
+			logger.Log.Printf(err.Error())
+			return
+		}
+
+		msg := "Update an answer" + questionId + "," + *(questionUser.EmailAddress) + "," + answerId + "," + answer.AnswerText
+		snsPublish(msg, "arn:aws:sns:us-east-1:931397163240:fall2020")
 	})
 
 	// Post answer
@@ -1007,8 +1040,8 @@ func main() {
 		}	// get the user info based on email
 		id, valid := c.Params.Get("question_id")
 		if !valid {
-			c.JSON(http.StatusOK, gin.H{"error": "email address is not exist"})
-			logger.Log.Printf("error: email is not exit")
+			c.JSON(http.StatusOK, gin.H{"error": "question id is not exist"})
+			logger.Log.Printf("error: question id is not exit")
 			return
 		}
 		var answer models.Answer
@@ -1039,6 +1072,22 @@ func main() {
 		t2.Send("db_response_time")
 		t.Send("api_response_time")
 		logger.Log.Printf("Post an answer is done...")
+
+		var question models.Question
+		if err = dao.DB.Where("id=?", id).First(&question).Error; err!=nil {
+			c.JSON(404, gin.H{"error": "The question_id is not exist"})
+			logger.Log.Printf(err.Error())
+			return
+		}
+		var questionUser models.User
+		if err = dao.DB.Where("id=?", question.UserID).First(&questionUser).Error; err!=nil {
+			c.JSON(404, gin.H{"error": "The user_id is not exist"})
+			logger.Log.Printf(err.Error())
+			return
+		}
+
+		msg := "Create an answer" + id + "," + *(questionUser.EmailAddress) + "," + answer.ID + "," + answer.AnswerText
+		snsPublish(msg, "arn:aws:sns:us-east-1:931397163240:fall2020")
 	})
 
 	// post a new question
@@ -1779,4 +1828,29 @@ func initSession() *session.Session {
 	}
 
 	return sess
+}
+
+func snsPublish(msg, topicARN string) {
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1"),
+	})
+
+	if err != nil {
+		fmt.Println("NewSession error:", err)
+		return
+	}
+
+	client := sns.New(sess)
+	input := &sns.PublishInput{
+		Message:  aws.String(msg),
+		TopicArn: aws.String(topicARN),
+	}
+
+	_, err = client.Publish(input)
+	if err != nil {
+		fmt.Println("Publish error:", err)
+		return
+	}
+
+	//fmt.Println(result)
 }
