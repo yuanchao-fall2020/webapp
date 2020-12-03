@@ -1809,7 +1809,7 @@ func initSession() *session.Session {
 	if sess == nil {
 		newSess, err := session.NewSessionWithOptions(session.Options{
 			// Specify profile to load for the session's config
-			Profile: "dev",
+			Profile: "prod",
 
 			// Provide SDK Config options, such as Region.
 			Config: aws.Config{
@@ -1831,7 +1831,7 @@ func initSession() *session.Session {
 }
 
 func snsPublish(msg, topicARN string) {
-	sess, err := session.NewSession(&aws.Config{
+	sess1, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1"),
 	})
 
@@ -1840,7 +1840,7 @@ func snsPublish(msg, topicARN string) {
 		return
 	}
 
-	client := sns.New(sess)
+	client := sns.New(sess1)
 	input := &sns.PublishInput{
 		Message:  aws.String(msg),
 		TopicArn: aws.String(topicARN),
