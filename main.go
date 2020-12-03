@@ -919,7 +919,7 @@ func main() {
 			return
 		}
 
-		msg := "Delete an answer" + questionId + "," + *(questionUser.EmailAddress) + "," + answerId + "," + answer.AnswerText
+		msg := "Delete an answer," + questionId + "," + *(questionUser.EmailAddress) + "," + answerId + "," + answer.AnswerText
 		snsPublish(msg, "arn:aws:sns:us-east-1:931397163240:fall2020")
 	})
 
@@ -1016,7 +1016,7 @@ func main() {
 			return
 		}
 
-		msg := "Update an answer" + questionId + "," + *(questionUser.EmailAddress) + "," + answerId + "," + answer.AnswerText
+		msg := "Update an answer," + questionId + "," + *(questionUser.EmailAddress) + "," + answerId + "," + answer.AnswerText
 		snsPublish(msg, "arn:aws:sns:us-east-1:931397163240:fall2020")
 	})
 
@@ -1086,7 +1086,7 @@ func main() {
 			return
 		}
 
-		msg := "Create an answer" + id + "," + *(questionUser.EmailAddress) + "," + answer.ID + "," + answer.AnswerText
+		msg := "Create an answer," + id + "," + *(questionUser.EmailAddress) + "," + answer.ID + "," + answer.AnswerText
 		snsPublish(msg, "arn:aws:sns:us-east-1:931397163240:fall2020")
 	})
 
@@ -1829,6 +1829,8 @@ func initSession() *session.Session {
 
 	return sess
 }
+
+var sess1 *session.Session
 
 func snsPublish(msg, topicARN string) {
 	sess1, err := session.NewSession(&aws.Config{
